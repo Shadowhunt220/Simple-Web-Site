@@ -1,5 +1,6 @@
 # Simple-Web-Site
 A demostration on a school project
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -68,6 +69,16 @@ A demostration on a school project
       background-color: #c0392b;
     }
 
+    .contador {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      display: inline-block;
+      font-size: 16px;
+    }
+
     footer {
       background-color: #34495e;
       color: white;
@@ -94,12 +105,34 @@ A demostration on a school project
   </style>
 </head>
 <body>
+  <?php
+  // Funcionalidad 1: Variables Dinámicas
+  $nombre_curso = "Desarrollo de Sistemas Web";
+  $nombre_alumno = "Miguel Angel García Carloz";
+  $codigo = "223984318";
+  $email = "ghverdes@gmail.com";
+  $logo_url = "https://i.postimg.cc/Bn4hmWJt/netflix-logo.jpg";
+  
+  // Funcionalidad 3: Contador de Visitas
+  $archivo_contador = "contador.txt";
+  $visitas = 1;
+  
+  if(file_exists($archivo_contador)) {
+      $visitas = file_get_contents($archivo_contador) + 1;
+  }
+  file_put_contents($archivo_contador, $visitas);
+  ?>
+  
   <div class="contenedor">
     <header>
-      <img src="https://i.postimg.cc/Bn4hmWJt/netflix-logo.jpg" alt="Logo del sitio" class="logo">
+      <img src="<?php echo $logo_url; ?>" alt="Logo del sitio" class="logo">
     </header>
 
     <main>
+      <div class="contador">
+        <strong>Visitas:</strong> <?php echo $visitas; ?>
+      </div>
+      <br>
       <a href="https://www.netflix.com/watch/70143836" class="video-link" target="_blank">
          Netflix
       </a>
@@ -107,11 +140,11 @@ A demostration on a school project
 
     <footer>
       <div class="info-footer">
-        <p><strong>Curso:</strong> Desarrollo de Sistemas Web</p>
-        <p><strong>Nombre:</strong> Miguel Angel García Carloz</p>
-        <p><strong>Código:</strong> 223984318</p>
+        <p><strong>Curso:</strong> <?php echo $nombre_curso; ?></p>
+        <p><strong>Nombre:</strong> <?php echo $nombre_alumno; ?></p>
+        <p><strong>Código:</strong> <?php echo $codigo; ?></p>
         <p><strong>Contacto:</strong> 
-          <a href="mailto:ghverdes@gmail.com" class="email">ghverdes@gmail.com</a>
+          <a href="mailto:<?php echo $email; ?>" class="email"><?php echo $email; ?></a>
         </p>
       </div>
     </footer>
