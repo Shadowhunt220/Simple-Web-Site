@@ -1,0 +1,11 @@
+{
+    "name": "tu-proyecto/simple-website",
+    "description": "Sitio web simple en PHP",
+    "type": "project",
+    "require": {
+        "php": ">=7.4"
+    },
+    "scripts": {
+        "start": "php -S 0.0.0.0:${PORT} Net.php"
+    }
+}
