@@ -7,15 +7,27 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Middleware - IMPORTANTE para Render
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://tu-app.onrender.com', 'http://localhost:3000'] 
+    : '*'
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Servir archivos estáticos - RUTA ABSOLUTA para Render
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Conexión a MongoDB
+// Conexión a MongoDB con mejor manejo de errores
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mediadb', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+})
+.then(() => console.log('✅ Conectado a MongoDB'))
+.catch(err => {
+  console.error('❌ Error conectando a MongoDB:', err);
+  process.exit(1);
 });
 
 // Esquema de la base de datos
@@ -47,6 +59,7 @@ app.get('/api/registros', async (req, res) => {
     const registros = await Registro.find().sort({ fechaCreacion: -1 });
     res.json(registros);
   } catch (error) {
+    console.error('Error en GET /api/registros:', error);
     res.status(500).json({ error: 'Error al obtener registros' });
   }
 });
@@ -57,6 +70,7 @@ app.post('/api/registros', async (req, res) => {
     await nuevoRegistro.save();
     res.status(201).json(nuevoRegistro);
   } catch (error) {
+    console.error('Error en POST /api/registros:', error);
     res.status(400).json({ error: 'Error al crear registro' });
   }
 });
@@ -66,15 +80,32 @@ app.delete('/api/registros/:id', async (req, res) => {
     await Registro.findByIdAndDelete(req.params.id);
     res.json({ message: 'Registro eliminado' });
   } catch (error) {
+    console.error('Error en DELETE /api/registros:', error);
     res.status(500).json({ error: 'Error al eliminar registro' });
   }
 });
 
-// Servir frontend
+// Ruta de salud para verificar que el servidor funciona
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Servidor funcionando correctamente',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Servir frontend - DEBE SER LA ÚLTIMA RUTA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
+// Manejo de errores global
+app.use((err, req, res, next) => {
+  console.error('Error no manejado:', err);
+  res.status(500).json({ error: 'Error interno del servidor' });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+  console.log(`📊 Entorno: ${process.env.NODE_ENV || 'development'}`);
 });
