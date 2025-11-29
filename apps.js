@@ -1,6 +1,6 @@
 class MediaDatabase {
   constructor() {
-    this.API_URL = '/api/registros';
+    this.API_URL = 'https://simple-web-site-wxv9.onrender.com/api/registros';
     this.init();
   }
 
