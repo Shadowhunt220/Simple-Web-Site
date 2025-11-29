@@ -7,19 +7,19 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware - IMPORTANTE para Render
+// Middleware - CORREGIDO para Render
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://tu-app.onrender.com', 'http://localhost:3000'] 
+    ? ['https://simple-web-site.onrender.com', 'http://localhost:3000'] 
     : '*'
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Servir archivos estáticos - RUTA ABSOLUTA para Render
-app.use(express.static(path.join(__dirname, '../frontend')));
+// Servir archivos estáticos - RUTA CORREGIDA para Render
+app.use(express.static(path.join(__dirname, 'frontend')));
 
-// Conexión a MongoDB con mejor manejo de errores
+// Conexión a MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mediadb', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -43,9 +43,9 @@ const registroSchema = new mongoose.Schema({
   bicicleta: Boolean,
   herramientas: Boolean,
   mediosDigitales: [{
-    tipo: String, // 'imagen', 'video', 'audio', 'documento'
+    tipo: String,
     url: String,
-    plataforma: String, // 'YouTube', 'Spotify', 'Google Drive', etc.
+    plataforma: String,
     titulo: String
   }],
   fechaCreacion: { type: Date, default: Date.now }
@@ -53,7 +53,7 @@ const registroSchema = new mongoose.Schema({
 
 const Registro = mongoose.model('Registro', registroSchema);
 
-// Rutas de la API
+// Rutas de la API (mantener igual)
 app.get('/api/registros', async (req, res) => {
   try {
     const registros = await Registro.find().sort({ fechaCreacion: -1 });
@@ -85,7 +85,7 @@ app.delete('/api/registros/:id', async (req, res) => {
   }
 });
 
-// Ruta de salud para verificar que el servidor funciona
+// Ruta de salud
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -94,9 +94,9 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Servir frontend - DEBE SER LA ÚLTIMA RUTA
+// Servir frontend - RUTA CORREGIDA
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+  res.sendFile(path.join(__dirname, 'frontend/index.html'));
 });
 
 // Manejo de errores global
@@ -109,3 +109,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
   console.log(`📊 Entorno: ${process.env.NODE_ENV || 'development'}`);
 });
+
