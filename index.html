@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Media Database</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📁 Catálogo de Registro Multimedia</h1>
+    </header>
+
+    <main class="main-content">
+      <!-- Formulario de Registro -->
+      <section class="form-section">
+        <form id="registroForm" class="registro-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="apellidos">Apellidos:</label>
+              <input type="text" id="apellidos" name="apellidos" placeholder="Escribe tus apellidos" required>
+            </div>
+
+            <div class="form-group">
+              <label for="primerNombre">Primer Nombre:</label>
+              <input type="text" id="primerNombre" name="primerNombre" placeholder="Primer nombre" required>
+            </div>
+
+            <div class="form-group">
+              <label for="segundoNombre">Segundo Nombre:</label>
+              <input type="text" id="segundoNombre" name="segundoNombre" placeholder="Segundo nombre">
+            </div>
+
+            <div class="form-group full-width">
+              <label for="detalles">Detalles Personales:</label>
+              <textarea id="detalles" name="detalles" rows="4" placeholder="Número de Identificación:
+Ocupación:
+Nivel:
+Especialidades:" required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="hobbies">Hobby Principal:</label>
+              <select id="hobbies" name="hobbies" required>
+                <option value="">-- Seleccione --</option>
+                <option value="jugar">🎮 Jugar Videojuegos</option>
+                <option value="ver">🎬 Ver películas/series</option>
+                <option value="música">🎵 Escuchar Música</option>
+                <option value="leer">📚 Lectura</option>
+                <option value="armar">🧩 Armar Rompecabezas</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Sección de Medios Digitales -->
+          <div class="medios-section">
+            <h3>🔗 Medios Digitales (Enlaces externos)</h3>
+            <div id="mediosContainer">
+              <div class="medio-item">
+                <select class="medio-tipo" name="medioTipo">
+                  <option value="">Tipo de medio</option>
+                  <option value="imagen">🖼️ Imagen</option>
+                  <option value="video">🎥 Video</option>
+                  <option value="audio">🎵 Audio</option>
+                  <option value="documento">📄 Documento</option>
+                </select>
+                <input type="url" class="medio-url" placeholder="https://ejemplo.com" name="medioUrl">
+                <select class="medio-plataforma" name="medioPlataforma">
+                  <option value="">Plataforma</option>
+                  <option value="YouTube">YouTube</option>
+                  <option value="Spotify">Spotify</option>
+                  <option value="Google Drive">Google Drive</option>
+                  <option value="Dropbox">Dropbox</option>
+                  <option value="Imgur">Imgur</option>
+                  <option value="Vimeo">Vimeo</option>
+                  <option value="SoundCloud">SoundCloud</option>
+                </select>
+                <input type="text" class="medio-titulo" placeholder="Título del medio" name="medioTitulo">
+                <button type="button" class="btn-remove" onclick="removeMedio(this)">❌</button>
+              </div>
+            </div>
+            <button type="button" class="btn-secondary" onclick="addMedio()">➕ Agregar Medio</button>
+          </div>
+
+          <!-- Verificaciones -->
+          <div class="verificaciones-grid">
+            <h3>✅ Verificaciones</h3>
+            <div class="checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" name="seguro" value="true">
+                <span class="checkmark"></span>
+                🛡️ Tengo seguro
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="auto" value="true">
+                <span class="checkmark"></span>
+                🚗 Tengo auto
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="acceso" value="true">
+                <span class="checkmark"></span>
+                🔑 Tengo acceso
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="bicicleta" value="true">
+                <span class="checkmark"></span>
+                🚲 Tengo bicicleta
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="herramientas" value="true">
+                <span class="checkmark"></span>
+                🛠️ Tengo herramientas
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary">📤 Guardar Registro</button>
+        </form>
+      </section>
+
+      <!-- Lista de Registros -->
+      <section class="registros-section">
+        <h2>📋 Registros Guardados</h2>
+        <div id="registrosContainer" class="registros-container">
+          <!-- Los registros se cargan aquí dinámicamente -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
