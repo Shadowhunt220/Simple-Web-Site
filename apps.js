@@ -40,9 +40,9 @@ class MediaDatabase {
       await this.guardarRegistro(registro);
       e.target.reset();
       this.cargarRegistros();
-      this.mostrarMensaje('✅ Registro guardado exitosamente', 'success');
+      alert('✅ Registro guardado exitosamente');
     } catch (error) {
-      this.mostrarMensaje('❌ Error al guardar el registro', 'error');
+      alert('❌ Error al guardar el registro');
     }
   }
 
@@ -171,16 +171,11 @@ class MediaDatabase {
 
     try {
       await fetch(`${this.API_URL}/${id}`, { method: 'DELETE' });
-      this.mostrarMensaje('✅ Registro eliminado', 'success');
+      alert('✅ Registro eliminado');
       this.cargarRegistros();
     } catch (error) {
-      this.mostrarMensaje('❌ Error al eliminar el registro', 'error');
+      alert('❌ Error al eliminar el registro');
     }
-  }
-
-  mostrarMensaje(mensaje, tipo) {
-    // Implementar notificación toast
-    alert(mensaje); // Simple por ahora
   }
 }
 
