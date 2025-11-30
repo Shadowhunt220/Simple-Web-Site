@@ -1,63 +1,54 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const { Pool } = require('pg');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware - CORREGIDO para Render
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://simple-web-site.onrender.com', 'http://localhost:3000'] 
-    : '*'
-}));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.static(__dirname));
 
-// Servir archivos estáticos - RUTA CORREGIDA para Render
-app.use(express.static(path.join(__dirname, 'frontend')));
-
-// Conexión a MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mediadb', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('✅ Conectado a MongoDB'))
-.catch(err => {
-  console.error('❌ Error conectando a MongoDB:', err);
-  process.exit(1);
+// Conexión a PostgreSQL
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
-// Esquema de la base de datos
-const registroSchema = new mongoose.Schema({
-  apellidos: String,
-  primerNombre: String,
-  segundoNombre: String,
-  detalles: String,
-  hobbies: String,
-  seguro: Boolean,
-  auto: Boolean,
-  acceso: Boolean,
-  bicicleta: Boolean,
-  herramientas: Boolean,
-  mediosDigitales: [{
-    tipo: String,
-    url: String,
-    plataforma: String,
-    titulo: String
-  }],
-  fechaCreacion: { type: Date, default: Date.now }
-});
+// Crear tabla si no existe
+const createTable = async () => {
+  const query = `
+    CREATE TABLE IF NOT EXISTS registros (
+      id SERIAL PRIMARY KEY,
+      apellidos VARCHAR(255),
+      primer_nombre VARCHAR(255),
+      segundo_nombre VARCHAR(255),
+      detalles TEXT,
+      hobbies VARCHAR(100),
+      seguro BOOLEAN DEFAULT false,
+      auto BOOLEAN DEFAULT false,
+      acceso BOOLEAN DEFAULT false,
+      bicicleta BOOLEAN DEFAULT false,
+      herramientas BOOLEAN DEFAULT false,
+      medios_digitales JSONB,
+      fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+  await pool.query(query);
+  console.log('✅ Tabla registros creada/verificada');
+};
 
-const Registro = mongoose.model('Registro', registroSchema);
+createTable();
 
-// Rutas de la API (mantener igual)
+// Rutas de la API
 app.get('/api/registros', async (req, res) => {
   try {
-    const registros = await Registro.find().sort({ fechaCreacion: -1 });
-    res.json(registros);
+    const result = await pool.query('SELECT * FROM registros ORDER BY fecha_creacion DESC');
+    res.json(result.rows);
   } catch (error) {
     console.error('Error en GET /api/registros:', error);
     res.status(500).json({ error: 'Error al obtener registros' });
@@ -66,9 +57,43 @@ app.get('/api/registros', async (req, res) => {
 
 app.post('/api/registros', async (req, res) => {
   try {
-    const nuevoRegistro = new Registro(req.body);
-    await nuevoRegistro.save();
-    res.status(201).json(nuevoRegistro);
+    const {
+      apellidos,
+      primerNombre,
+      segundoNombre,
+      detalles,
+      hobbies,
+      seguro,
+      auto,
+      acceso,
+      bicicleta,
+      herramientas,
+      mediosDigitales
+    } = req.body;
+
+    const query = `
+      INSERT INTO registros 
+      (apellidos, primer_nombre, segundo_nombre, detalles, hobbies, seguro, auto, acceso, bicicleta, herramientas, medios_digitales)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING *
+    `;
+    
+    const values = [
+      apellidos,
+      primerNombre,
+      segundoNombre,
+      detalles,
+      hobbies,
+      seguro || false,
+      auto || false,
+      acceso || false,
+      bicicleta || false,
+      herramientas || false,
+      JSON.stringify(mediosDigitales || [])
+    ];
+
+    const result = await pool.query(query, values);
+    res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Error en POST /api/registros:', error);
     res.status(400).json({ error: 'Error al crear registro' });
@@ -77,7 +102,7 @@ app.post('/api/registros', async (req, res) => {
 
 app.delete('/api/registros/:id', async (req, res) => {
   try {
-    await Registro.findByIdAndDelete(req.params.id);
+    await pool.query('DELETE FROM registros WHERE id = $1', [req.params.id]);
     res.json({ message: 'Registro eliminado' });
   } catch (error) {
     console.error('Error en DELETE /api/registros:', error);
@@ -94,19 +119,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Servir frontend - RUTA CORREGIDA
+// Servir frontend
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend/index.html'));
-});
-
-// Manejo de errores global
-app.use((err, req, res, next) => {
-  console.error('Error no manejado:', err);
-  res.status(500).json({ error: 'Error interno del servidor' });
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-  console.log(`📊 Entorno: ${process.env.NODE_ENV || 'development'}`);
 });
-
