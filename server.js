@@ -8,41 +8,43 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
 // Conexión a PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 // Crear tabla si no existe
-const createTable = async () => {
-  const query = `
-    CREATE TABLE IF NOT EXISTS registros (
-      id SERIAL PRIMARY KEY,
-      apellidos VARCHAR(255),
-      primer_nombre VARCHAR(255),
-      segundo_nombre VARCHAR(255),
-      detalles TEXT,
-      hobbies VARCHAR(100),
-      seguro BOOLEAN DEFAULT false,
-      auto BOOLEAN DEFAULT false,
-      acceso BOOLEAN DEFAULT false,
-      bicicleta BOOLEAN DEFAULT false,
-      herramientas BOOLEAN DEFAULT false,
-      medios_digitales JSONB,
-      fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `;
-  await pool.query(query);
-  console.log('✅ Tabla registros creada/verificada');
+const initDatabase = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS registros (
+        id SERIAL PRIMARY KEY,
+        apellidos VARCHAR(255) NOT NULL,
+        primer_nombre VARCHAR(255) NOT NULL,
+        segundo_nombre VARCHAR(255),
+        detalles TEXT NOT NULL,
+        hobbies VARCHAR(100) NOT NULL,
+        seguro BOOLEAN DEFAULT false,
+        auto BOOLEAN DEFAULT false,
+        acceso BOOLEAN DEFAULT false,
+        bicicleta BOOLEAN DEFAULT false,
+        herramientas BOOLEAN DEFAULT false,
+        medios_digitales JSONB DEFAULT '[]',
+        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log('✅ Tabla de registros creada/verificada');
+  } catch (error) {
+    console.error('❌ Error creando tabla:', error);
+  }
 };
 
-createTable();
+initDatabase();
 
 // Rutas de la API
 app.get('/api/registros', async (req, res) => {
@@ -81,7 +83,7 @@ app.post('/api/registros', async (req, res) => {
     const values = [
       apellidos,
       primerNombre,
-      segundoNombre,
+      segundoNombre || '',
       detalles,
       hobbies,
       seguro || false,
@@ -126,4 +128,5 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+  console.log(`📊 Entorno: ${process.env.NODE_ENV || 'development'}`);
 });
